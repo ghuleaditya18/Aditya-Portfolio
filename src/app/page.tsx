@@ -6,10 +6,14 @@ import { Experience } from "@/components/sections/Experience";
 import { Hero } from "@/components/sections/Hero";
 import { Projects } from "@/components/sections/Projects";
 import { Skills } from "@/components/sections/Skills";
+import { ParticleBackground } from "@/components/background/ParticleBackground";
 
 export default function Home() {
   return (
-    <main className="flex-1">
+    <main className="relative flex-1">
+      {/* Ambient Particle Background */}
+      <ParticleBackground />
+
       {/* Hero Section */}
       <Hero />
 

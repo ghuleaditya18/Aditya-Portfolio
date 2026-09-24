@@ -44,16 +44,47 @@ export function Navbar() {
 
   // Active section tracking using IntersectionObserver
   useEffect(() => {
+    const visibleMap = new Map<string, IntersectionObserverEntry>();
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
+            visibleMap.set(entry.target.id, entry);
+          } else {
+            visibleMap.delete(entry.target.id);
           }
         });
+
+        if (visibleMap.size === 0) return;
+
+        // When user is near top of page and hero is visible, clear active section
+        if (window.scrollY < 100 && visibleMap.has("hero")) {
+          setActiveSection("");
+          return;
+        }
+
+        const visibleEntries = Array.from(visibleMap.values());
+        const nonHeroEntries = visibleEntries.filter((e) => e.target.id !== "hero");
+
+        if (nonHeroEntries.length > 0) {
+          nonHeroEntries.sort(
+            (a, b) => Math.abs(a.boundingClientRect.top) - Math.abs(b.boundingClientRect.top)
+          );
+
+          const best = nonHeroEntries[0];
+          if (best.boundingClientRect.top < window.innerHeight * 0.6) {
+            setActiveSection(best.target.id);
+            return;
+          }
+        }
+
+        if (visibleMap.has("hero")) {
+          setActiveSection("");
+        }
       },
       {
-        rootMargin: "-20% 0px -50% 0px",
+        rootMargin: "-20% 0px -40% 0px",
         threshold: 0,
       }
     );
@@ -66,6 +97,23 @@ export function Navbar() {
 
     return () => observer.disconnect();
   }, []);
+
+  // Synchronize URL hash with activeSection without polluting browser history
+  useEffect(() => {
+    if (typeof window === "undefined" || window.location.pathname !== "/") return;
+
+    if (activeSection) {
+      const targetHash = `#${activeSection}`;
+      if (window.location.hash !== targetHash) {
+        window.history.replaceState(null, "", targetHash);
+      }
+    } else {
+      // Hero state: clean URL to / when user is at top of page
+      if (window.location.hash !== "" && window.scrollY < 100) {
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+    }
+  }, [activeSection]);
 
   // Close menu on ESC key press
   useEffect(() => {

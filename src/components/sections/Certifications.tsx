@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion, type Variants } from "motion/react";
 import { Award, BookOpen, Building2, ExternalLink, Eye, FileText } from "lucide-react";
 import { Container } from "@/components/layout/Container";
@@ -53,47 +54,73 @@ export function Certifications() {
               <h3 className="text-xs font-semibold uppercase tracking-wider text-sky-400">
                 Professional Certifications
               </h3>
-              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {certificationsData.map((item) => (
                   <motion.div
                     key={item.id}
                     variants={itemVariants}
-                    className="flex flex-col justify-between gap-5 rounded-2xl border border-white/10 bg-zinc-900/60 p-6 sm:p-8 backdrop-blur-sm shadow-xl transition-all hover:border-white/20"
+                    className="group flex flex-col justify-between gap-5 rounded-2xl border border-white/10 bg-zinc-900/60 p-6 sm:p-7 backdrop-blur-sm shadow-xl transition-all hover:border-sky-500/30 hover:bg-zinc-900/80"
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-lg border border-sky-500/20 bg-sky-500/10 p-2.5 text-sky-400 shrink-0">
-                        <Award className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-lg font-bold text-white sm:text-xl leading-snug">
-                          {item.title}
-                        </h4>
-                        <div className="mt-2 flex items-center gap-1.5 text-sm font-medium text-zinc-400">
-                          <Building2 className="h-4 w-4 shrink-0 text-sky-400" />
-                          <span>{item.issuer}</span>
+                    <div>
+                      {/* Certificate Image Preview */}
+                      {item.image && (
+                        <div
+                          className="group/preview relative aspect-[3508/2481] w-full overflow-hidden rounded-xl border border-white/10 bg-zinc-950 cursor-pointer mb-5 transition-all hover:border-sky-500/40"
+                          style={{ aspectRatio: "3508 / 2481" }}
+                          onClick={() => setSelectedCert(item)}
+                        >
+                          <Image
+                            src={item.image}
+                            alt={item.title}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 500px"
+                            className="object-contain object-center transition-transform duration-300 group-hover/preview:scale-[1.02]"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/40 opacity-0 transition-opacity duration-300 group-hover/preview:opacity-100">
+                            <span className="flex items-center gap-1.5 rounded-lg border border-white/20 bg-zinc-900/90 px-3 py-1.5 text-xs font-medium text-white shadow-md">
+                              <Eye className="h-3.5 w-3.5 text-sky-400" /> Open Full Image
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-start gap-3.5">
+                        <div className="rounded-lg border border-sky-500/20 bg-sky-500/10 p-2 text-sky-400 shrink-0 mt-0.5">
+                          <Award className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-lg font-bold text-white sm:text-xl leading-snug group-hover:text-sky-300 transition-colors">
+                            {item.title}
+                          </h4>
+                          <div className="mt-1.5 flex items-center gap-1.5 text-sm font-medium text-zinc-400">
+                            <Building2 className="h-4 w-4 shrink-0 text-sky-400" />
+                            <span>{item.issuer}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    {item.issueDate && (
-                      <div className="text-xs font-mono text-zinc-500 border-t border-white/5 pt-3">
-                        Issued: {item.issueDate}
-                      </div>
-                    )}
+                    <div className="border-t border-white/5 pt-4 flex items-center justify-between gap-3">
+                      {item.issueDate ? (
+                        <span className="text-xs font-mono text-zinc-500">
+                          Issued: {item.issueDate}
+                        </span>
+                      ) : (
+                        <span className="text-xs font-mono text-zinc-500">Verified Credential</span>
+                      )}
 
-                    {item.image && (
-                      <div className="border-t border-white/5 pt-4">
+                      {item.image && (
                         <button
                           type="button"
                           onClick={() => setSelectedCert(item)}
                           aria-label={`View ${item.title} certificate`}
-                          className="inline-flex items-center gap-2 rounded-lg border border-sky-500/20 bg-sky-500/10 px-3.5 py-2 text-xs font-medium text-sky-400 transition-all hover:bg-sky-500/20 hover:border-sky-500/30 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-sky-500/20 bg-sky-500/10 px-3 py-1.5 text-xs font-medium text-sky-400 transition-all hover:bg-sky-500/20 hover:border-sky-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
                         >
                           <Eye className="h-3.5 w-3.5 shrink-0" />
                           <span>View Certificate</span>
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </motion.div>
                 ))}
               </div>
