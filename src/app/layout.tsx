@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
 
@@ -35,9 +36,9 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     images: [
       {
-        url: "/images/profile.png",
-        width: 1145,
-        height: 1374,
+        url: "/og.png",
+        width: 1200,
+        height: 630,
         alt: `${siteConfig.name} - ${siteConfig.author.role}`,
       },
     ],
@@ -46,7 +47,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteConfig.title,
     description: siteConfig.description,
-    images: ["/images/profile.png"],
+    images: ["/og.png"],
   },
   icons: {
     icon: "/favicon.ico",
@@ -66,6 +67,7 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col bg-zinc-950 text-zinc-100 selection:bg-sky-500/20 selection:text-sky-300">
         <Navbar />
         {children}
+        <Footer />
       </body>
     </html>
   );

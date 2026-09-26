@@ -130,8 +130,7 @@ export function CertificateLightbox({
               alt={`${certification.title} certificate`}
               width={3508}
               height={2481}
-              priority
-              sizes="(max-width: 768px) 100vw, 1400px"
+              sizes="(max-width: 640px) 100vw, (max-width: 1200px) 90vw, 1152px"
               className="max-h-[80vh] w-auto max-w-full object-contain rounded-xl border border-white/10 shadow-2xl"
             />
           </div>

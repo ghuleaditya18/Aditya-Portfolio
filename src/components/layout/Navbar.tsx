@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { Menu, X } from "lucide-react";
 import { siteConfig } from "@/config/site";
@@ -41,9 +42,28 @@ function LinkedinIcon({ className = "h-4 w-4" }: { className?: string }) {
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("");
+  const pathname = usePathname();
 
   // Active section tracking using IntersectionObserver
   useEffect(() => {
+    if (pathname !== "/") {
+      requestAnimationFrame(() => {
+        setActiveSection("");
+      });
+      return;
+    }
+
+    const sectionIds = ["hero", "about", "experience", "projects", "skills", "education", "certifications", "contact"];
+    const validSections = ["about", "experience", "projects", "skills", "education", "certifications", "contact"];
+
+    // Inspect URL hash on mount or when returning to homepage
+    const initialHash = window.location.hash.replace("#", "");
+    if (validSections.includes(initialHash)) {
+      requestAnimationFrame(() => {
+        setActiveSection(initialHash);
+      });
+    }
+
     const visibleMap = new Map<string, IntersectionObserverEntry>();
 
     const observer = new IntersectionObserver(
@@ -89,14 +109,33 @@ export function Navbar() {
       }
     );
 
-    const sectionIds = ["hero", "about", "experience", "projects", "skills", "education", "certifications", "contact"];
-    sectionIds.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
+    const observeSections = () => {
+      sectionIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) observer.observe(el);
+      });
+    };
 
-    return () => observer.disconnect();
-  }, []);
+    observeSections();
+    const rafId = requestAnimationFrame(observeSections);
+
+    const handleHashOrPopState = () => {
+      const hash = window.location.hash.replace("#", "");
+      if (validSections.includes(hash)) {
+        setActiveSection(hash);
+      }
+    };
+
+    window.addEventListener("popstate", handleHashOrPopState);
+    window.addEventListener("hashchange", handleHashOrPopState);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      observer.disconnect();
+      window.removeEventListener("popstate", handleHashOrPopState);
+      window.removeEventListener("hashchange", handleHashOrPopState);
+    };
+  }, [pathname]);
 
   // Synchronize URL hash with activeSection without polluting browser history
   useEffect(() => {

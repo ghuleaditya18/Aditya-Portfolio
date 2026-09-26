@@ -1,13 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import { motion, type Variants } from "motion/react";
 import {
+  AlertCircle,
   ArrowUpRight,
+  CheckCircle2,
   Download,
   FileText,
+  Loader2,
   Mail,
   MapPin,
   Phone,
+  Send,
 } from "lucide-react";
 import { Container } from "@/components/layout/Container";
 import { SectionHeading } from "@/components/layout/SectionHeading";
@@ -64,6 +69,66 @@ const itemVariants: Variants = {
 };
 
 export function Contact() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    service: "Web Development",
+    message: "",
+  });
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus("submitting");
+    setErrorMessage("");
+
+    if (!formData.name.trim()) {
+      setStatus("error");
+      setErrorMessage("Please enter your name.");
+      return;
+    }
+    if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      setStatus("error");
+      setErrorMessage("Please enter a valid email address.");
+      return;
+    }
+    if (!formData.message.trim()) {
+      setStatus("error");
+      setErrorMessage("Please enter your message.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setStatus("error");
+        setErrorMessage(data.error || "Failed to send message. Please try again.");
+        return;
+      }
+
+      setStatus("success");
+      setFormData({
+        name: "",
+        email: "",
+        service: "Web Development",
+        message: "",
+      });
+    } catch {
+      setStatus("error");
+      setErrorMessage("An unexpected network error occurred. Please check your connection and try again.");
+    }
+  };
+
   return (
     <section id="contact" className="relative border-t border-white/5 py-16 sm:py-24">
       <Container>
@@ -80,7 +145,173 @@ export function Contact() {
           viewport={{ once: true, margin: "-50px" }}
           className="flex flex-col gap-6 max-w-4xl"
         >
-          {/* Row 1: Primary Direct Contact Cards (Email & Phone) */}
+          {/* Row 1: Send Me a Message Form Card */}
+          <motion.div
+            variants={itemVariants}
+            className="rounded-2xl border border-white/10 bg-zinc-900/60 p-6 sm:p-8 backdrop-blur-sm shadow-xl transition-all hover:border-white/20"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="rounded-lg border border-sky-500/20 bg-sky-500/10 p-2.5 text-sky-400 shrink-0">
+                <Send className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white sm:text-xl">
+                  Send Me a Message
+                </h3>
+                <p className="text-xs text-zinc-400">
+                  Fill out the form below to get in touch regarding services or engineering opportunities.
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                {/* Name Field */}
+                <div>
+                  <label
+                    htmlFor="contact-name"
+                    className="block text-xs font-semibold uppercase tracking-wider text-sky-400 mb-2"
+                  >
+                    Name <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="contact-name"
+                    name="name"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Your full name"
+                    disabled={status === "submitting"}
+                    className="w-full rounded-lg border border-white/10 bg-zinc-950/80 px-4 py-2.5 text-sm text-white placeholder-zinc-500 transition-colors focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 disabled:opacity-50"
+                  />
+                </div>
+
+                {/* Email Field */}
+                <div>
+                  <label
+                    htmlFor="contact-email"
+                    className="block text-xs font-semibold uppercase tracking-wider text-sky-400 mb-2"
+                  >
+                    Email <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    id="contact-email"
+                    name="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="your.email@example.com"
+                    disabled={status === "submitting"}
+                    className="w-full rounded-lg border border-white/10 bg-zinc-950/80 px-4 py-2.5 text-sm text-white placeholder-zinc-500 transition-colors focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 disabled:opacity-50"
+                  />
+                </div>
+              </div>
+
+              {/* Service Dropdown Field */}
+              <div>
+                <label
+                  htmlFor="contact-service"
+                  className="block text-xs font-semibold uppercase tracking-wider text-sky-400 mb-2"
+                >
+                  Service <span className="text-red-400">*</span>
+                </label>
+                <select
+                  id="contact-service"
+                  name="service"
+                  required
+                  value={formData.service}
+                  onChange={(e) => setFormData({ ...formData, service: e.target.value })}
+                  disabled={status === "submitting"}
+                  className="w-full rounded-lg border border-white/10 bg-zinc-950/80 px-4 py-2.5 text-sm text-white transition-colors focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 disabled:opacity-50 cursor-pointer"
+                >
+                  <option value="Web Development" className="bg-zinc-900 text-white">
+                    Web Development
+                  </option>
+                  <option value="Frontend Development" className="bg-zinc-900 text-white">
+                    Frontend Development
+                  </option>
+                  <option value="Backend Development" className="bg-zinc-900 text-white">
+                    Backend Development
+                  </option>
+                  <option value="Backend Development" className="bg-zinc-900 text-white">
+                    Full Stack Development
+                  </option>
+                  <option value="REST API Development" className="bg-zinc-900 text-white">
+                    REST API Development
+                  </option>
+                </select>
+              </div>
+
+              {/* Message Field */}
+              <div>
+                <label
+                  htmlFor="contact-message"
+                  className="block text-xs font-semibold uppercase tracking-wider text-sky-400 mb-2"
+                >
+                  Message <span className="text-red-400">*</span>
+                </label>
+                <textarea
+                  id="contact-message"
+                  name="message"
+                  required
+                  rows={4}
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  placeholder="Tell me about your project or inquiry..."
+                  disabled={status === "submitting"}
+                  className="w-full rounded-lg border border-white/10 bg-zinc-950/80 px-4 py-2.5 text-sm text-white placeholder-zinc-500 transition-colors focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 disabled:opacity-50 resize-y"
+                />
+              </div>
+
+              {/* Feedback Alerts */}
+              {status === "success" && (
+                <div
+                  role="alert"
+                  aria-live="polite"
+                  className="flex items-center gap-2.5 rounded-lg border border-sky-500/30 bg-sky-500/10 p-4 text-xs font-medium text-sky-300"
+                >
+                  <CheckCircle2 className="h-4 w-4 text-sky-400 shrink-0" />
+                  <span>Your message has been sent successfully! I will get back to you soon.</span>
+                </div>
+              )}
+
+              {status === "error" && (
+                <div
+                  role="alert"
+                  aria-live="polite"
+                  className="flex items-center gap-2.5 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-xs font-medium text-red-300"
+                >
+                  <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
+                  <span>{errorMessage || "Failed to send message. Please try again."}</span>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <div>
+                <button
+                  type="submit"
+                  disabled={status === "submitting"}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-500 px-6 py-3 text-xs sm:text-sm font-semibold text-zinc-950 transition-all hover:bg-sky-400 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                >
+                  {status === "submitting" ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+                      <span>Sending Message...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 shrink-0" />
+                      <span>Send Message</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+
+          {/* Row 2: Primary Direct Contact Cards (Email & Phone) */}
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             {/* Email Card */}
             <motion.div
@@ -157,7 +388,7 @@ export function Contact() {
             </motion.div>
           </div>
 
-          {/* Row 2: Secondary Info Grid (Location, Professional Profiles, Resume) */}
+          {/* Secondary Info Grid (Location, Professional Profiles, Resume) */}
           <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
             {/* Location Card */}
             <motion.div
@@ -234,17 +465,9 @@ export function Contact() {
               </a>
             </motion.div>
           </div>
-
-          {/* Row 3: Closing Footer Bar */}
-          <motion.div
-            variants={itemVariants}
-            className="mt-10 border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-zinc-500"
-          >
-            <span>© {new Date().getFullYear()} Aditya Dattu Ghule. All rights reserved.</span>
-            <span>Python Full Stack Developer</span>
-          </motion.div>
         </motion.div>
       </Container>
     </section>
   );
 }
+

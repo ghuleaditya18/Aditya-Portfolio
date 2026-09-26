@@ -29,6 +29,15 @@ const itemVariants: Variants = {
   },
 };
 
+const preloadedImages = new Set<string>();
+
+function preloadCertificateImage(src: string) {
+  if (!src || typeof window === "undefined" || preloadedImages.has(src)) return;
+  preloadedImages.add(src);
+  const img = new window.Image();
+  img.src = src;
+}
+
 export function Certifications() {
   const [selectedCert, setSelectedCert] = useState<Certification | null>(null);
 
@@ -68,6 +77,8 @@ export function Certifications() {
                           className="group/preview relative aspect-[3508/2481] w-full overflow-hidden rounded-xl border border-white/10 bg-zinc-950 cursor-pointer mb-5 transition-all hover:border-sky-500/40"
                           style={{ aspectRatio: "3508 / 2481" }}
                           onClick={() => setSelectedCert(item)}
+                          onMouseEnter={() => item.image && preloadCertificateImage(item.image)}
+                          onFocus={() => item.image && preloadCertificateImage(item.image)}
                         >
                           <Image
                             src={item.image}
@@ -113,6 +124,8 @@ export function Certifications() {
                         <button
                           type="button"
                           onClick={() => setSelectedCert(item)}
+                          onMouseEnter={() => item.image && preloadCertificateImage(item.image)}
+                          onFocus={() => item.image && preloadCertificateImage(item.image)}
                           aria-label={`View ${item.title} certificate`}
                           className="inline-flex items-center gap-1.5 rounded-lg border border-sky-500/20 bg-sky-500/10 px-3 py-1.5 text-xs font-medium text-sky-400 transition-all hover:bg-sky-500/20 hover:border-sky-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
                         >
