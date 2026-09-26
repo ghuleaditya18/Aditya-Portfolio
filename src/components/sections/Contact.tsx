@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, type Variants } from "motion/react";
 import {
   AlertCircle,
@@ -18,6 +18,48 @@ import { Container } from "@/components/layout/Container";
 import { SectionHeading } from "@/components/layout/SectionHeading";
 import { profileData } from "@/data/profile";
 import { siteConfig } from "@/config/site";
+
+const VALID_SERVICES = [
+  "Web Development",
+  "Frontend Development",
+  "Backend Development",
+  "Full Stack Development",
+  "REST API Development",
+] as const;
+
+type ServiceType = (typeof VALID_SERVICES)[number];
+
+function parseServiceValue(val: string | null | undefined): ServiceType | null {
+  if (!val) return null;
+  const decoded = decodeURIComponent(val).trim().toLowerCase();
+  for (const service of VALID_SERVICES) {
+    if (service.toLowerCase() === decoded) return service;
+    const slugified = service.toLowerCase().replace(/\s+/g, "-");
+    if (slugified === decoded) return service;
+  }
+  return null;
+}
+
+function getServiceFromUrl(): ServiceType | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const searchParams = new URLSearchParams(window.location.search);
+    const searchService = searchParams.get("service");
+
+    let hashService: string | null = null;
+    if (window.location.hash.includes("?")) {
+      const hashQuery = window.location.hash.split("?")[1];
+      const hashParams = new URLSearchParams(hashQuery);
+      hashService = hashParams.get("service");
+    }
+
+    const rawService = searchService || hashService;
+    return parseServiceValue(rawService);
+  } catch {
+    return null;
+  }
+}
 
 function GithubIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -69,7 +111,12 @@ const itemVariants: Variants = {
 };
 
 export function Contact() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    email: string;
+    service: ServiceType;
+    message: string;
+  }>({
     name: "",
     email: "",
     service: "Web Development",
@@ -77,6 +124,37 @@ export function Contact() {
   });
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    const syncServiceFromUrl = () => {
+      const urlService = getServiceFromUrl();
+      if (urlService) {
+        setFormData((prev) => ({ ...prev, service: urlService }));
+      }
+    };
+
+    syncServiceFromUrl();
+
+    const handleCustomEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      if (customEvent.detail) {
+        const parsed = parseServiceValue(customEvent.detail);
+        if (parsed) {
+          setFormData((prev) => ({ ...prev, service: parsed }));
+        }
+      }
+    };
+
+    window.addEventListener("popstate", syncServiceFromUrl);
+    window.addEventListener("hashchange", syncServiceFromUrl);
+    window.addEventListener("portfolio:select-service", handleCustomEvent);
+
+    return () => {
+      window.removeEventListener("popstate", syncServiceFromUrl);
+      window.removeEventListener("hashchange", syncServiceFromUrl);
+      window.removeEventListener("portfolio:select-service", handleCustomEvent);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -222,7 +300,9 @@ export function Contact() {
                   name="service"
                   required
                   value={formData.service}
-                  onChange={(e) => setFormData({ ...formData, service: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, service: e.target.value as ServiceType })
+                  }
                   disabled={status === "submitting"}
                   className="w-full rounded-lg border border-white/10 bg-zinc-950/80 px-4 py-2.5 text-sm text-white transition-colors focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/20 disabled:opacity-50 cursor-pointer"
                 >
@@ -235,7 +315,7 @@ export function Contact() {
                   <option value="Backend Development" className="bg-zinc-900 text-white">
                     Backend Development
                   </option>
-                  <option value="Backend Development" className="bg-zinc-900 text-white">
+                  <option value="Full Stack Development" className="bg-zinc-900 text-white">
                     Full Stack Development
                   </option>
                   <option value="REST API Development" className="bg-zinc-900 text-white">

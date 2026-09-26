@@ -90,46 +90,31 @@ export function Footer() {
               Services
             </h3>
             <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href="/#contact"
-                  className="transition-colors hover:text-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded"
-                >
-                  Web Development
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/#contact"
-                  className="transition-colors hover:text-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded"
-                >
-                  Frontend Development
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/#contact"
-                  className="transition-colors hover:text-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded"
-                >
-                  Backend Development
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/#contact"
-                  className="transition-colors hover:text-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded"
-                >
-                  Full Stack Development
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/#contact"
-                  className="transition-colors hover:text-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded"
-                >
-                  REST API Development
-                </Link>
-              </li>
+              {[
+                { label: "Web Development", slug: "web-development" },
+                { label: "Frontend Development", slug: "frontend-development" },
+                { label: "Backend Development", slug: "backend-development" },
+                { label: "Full Stack Development", slug: "full-stack-development" },
+                { label: "REST API Development", slug: "rest-api-development" },
+              ].map((service) => (
+                <li key={service.label}>
+                  <Link
+                    href={`/?service=${service.slug}#contact`}
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        window.dispatchEvent(
+                          new CustomEvent("portfolio:select-service", {
+                            detail: service.label,
+                          })
+                        );
+                      }
+                    }}
+                    className="transition-colors hover:text-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded"
+                  >
+                    {service.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

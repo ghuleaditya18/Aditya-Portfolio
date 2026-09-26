@@ -5,6 +5,7 @@ const ALLOWED_SERVICES = [
   "Web Development",
   "Frontend Development",
   "Backend Development",
+  "Full Stack Development",
   "REST API Development",
 ] as const;
 
